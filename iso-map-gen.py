@@ -10,7 +10,7 @@ html = urllib.request.urlopen(
 
 soup = BeautifulSoup(html)
 
-dict = {}
+countries = {}
 
 rows = soup.find(id="codelist")
 for row in rows.find_all("tr", recursive=False):
@@ -18,7 +18,7 @@ for row in rows.find_all("tr", recursive=False):
     if cells: # ignore the header row
         code =    cells[2].get_text().strip()
         country = cells[1].get_text().strip()
-        dict[code] = country
+        countries[code] = country
 
 file = open("country-codes.json", "w")
-json.dump(dict, file)
+json.dump(countries, file)

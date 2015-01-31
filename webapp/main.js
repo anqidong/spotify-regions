@@ -5,11 +5,11 @@ $(document).ready(function(event) {
         window.countryCodes = data;
     });
     
-    $("#search").keyup(function(e) {
+    $("#artist-search").keyup(function(e) {
         if (e.keyCode == 13) {
             // enter key pressed
             
-            var artistId = $("#search").val()
+            var artistId = $("#artist-search").val()
             setName(artistId);
             populateSongs(artistId);
         }
@@ -32,6 +32,8 @@ function populateSongs(artistId) {
 
 function appendSongs(url) {
     $.getJSON(url, function(data) {
+        // dumping stuff into a list, then writing it into a separate list 
+        // element, so that we don't rewrite the DOM too heavily
         var domList = $("<ul></ul>").appendTo($("#songs"));
         var contents = [];
         
@@ -56,6 +58,7 @@ function appendSongs(url) {
         
         domList.html(contents.join(""));
         
+        // TODO do lazy infinite scroll
         if (data.next !== null) {
             appendSongs(data.next);
         }

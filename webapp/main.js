@@ -2,12 +2,13 @@
 
 (function(){
     var appName = "Spotify region search";
+    var countryCodes = {};
+    
+    $(function() {
+        $.getJSON("country-codes.json", function(data) { countryCodes = data; })
+    });
 
     $(document).ready(function(event) {
-        $.getJSON("country-codes.json", function(data) {
-            window.countryCodes = data;
-        });
-        
         $("#artist-search").keyup(function(e) {
             if (e.keyCode == 13) {
                 // enter key pressed

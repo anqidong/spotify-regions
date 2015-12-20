@@ -1,5 +1,7 @@
 "use strict";
 
+var appName = "Spotify region search";
+
 $(document).ready(function(event) {
     $.getJSON("country-codes.json", function(data) {
         window.countryCodes = data;
@@ -8,29 +10,78 @@ $(document).ready(function(event) {
     $("#artist-search").keyup(function(e) {
         if (e.keyCode == 13) {
             // enter key pressed
-            
-            var artistId = $("#artist-search").val()
-            setName(artistId);
-            populateSongs(artistId);
+            setArtistSearch($("#artist-search").val());
         }
     });
 });
 
-function setName(artistId) {
-    $.getJSON("https://api.spotify.com/v1/artists/" + artistId, function(data) {
-        var name = data.name;
+function setArtistSearch(artistName) {
+    var nameEncoded = artistName.replace(/ /g, "+");
+    var queryUrl = 
+        "https://api.spotify.com/v1/search?q=" + 
+            nameEncoded + "&type=artist&limit=50";
+    // don't set the market, in order to receive artist results for any market
+    
+    $.getJSON(queryUrl, function(data) {
+        renderArtists(data.artists.items, false);
+    });
+    
+    document.title = 'Search: "' + artistName + '" - ' + appName;
+}
+
+function renderArtists(artistList, isAppend) {
+    $("#songs").hide();
+    
+    if (!isAppend) {
+        $("#artist-results").empty();
+    }
+    $("#artist-results").show();
+    
+    // dumping stuff into a list, then writing it into a separate list 
+    // element, so that we don't rewrite the DOM too heavily
+    var domList = $("<ul></ul>").appendTo($("#artist-results"));
+    var contents = [];
+    
+    for (var i = 0; i < artistList.length; i++) {
+        var item = artistList[i];
+        var displayElements = [];
         
-        $("span#artist-name").html(name);
-        document.title = name + " - Spotify region search";
+        var linkHtml = 
+            '<a href="#" class="artist-open-button" ' + 
+            'data-artist-id="' + item.id + '" ' + 
+            'data-artist-name="' + item.name + '">open</a>';
+        
+        displayElements.push(item.name);
+        displayElements.push("(" + item.popularity + ")");
+        if (("genres" in item) && (item.genres.length > 0)) {
+            displayElements.push("{genres: " + item.genres.join(", ") + "}");
+        }
+        
+        contents.push("<li>" + displayElements.join(" ") + " " + linkHtml);
+    }
+    
+    domList.html(contents.join(""));
+    $(".artist-open-button").click(function() {
+       document.title = $(this).data('artist-name') + '" - ' + appName;
+       populateSongs($(this).data('artist-id'));
+       return false;
     });
 }
 
 function populateSongs(artistId) {
+    $("#artist-results").hide();
     $("#songs").empty();
-    appendSongs("https://api.spotify.com/v1/artists/" + artistId + "/albums");
+    $("#songs").show();
+    
+    appendSongs("https://api.spotify.com/v1/artists/" + artistId + "/albums", 3);
 }
 
-function appendSongs(url) {
+function appendSongs(url, countdown) {
+    if (countdown <= 0) {
+        $("#songs").append("<div><i>(remainder truncated)</i></div>");
+        return;
+    }
+    
     $.getJSON(url, function(data) {
         // dumping stuff into a list, then writing it into a separate list 
         // element, so that we don't rewrite the DOM too heavily
@@ -49,8 +100,6 @@ function appendSongs(url) {
                         "title='" + countryCodes[str] + "' />";
                 }).join(" ");
                 
-            
-            
             contents.push(
                 "<li><img src='" + imageStr + "' width='32' height ='32' />" + 
                 data.items[i].name + ": " + marketStr + "</li>");
@@ -60,7 +109,7 @@ function appendSongs(url) {
         
         // TODO do lazy infinite scroll
         if (data.next !== null) {
-            appendSongs(data.next);
+            appendSongs(data.next, countdown - 1);
         }
     });
 }

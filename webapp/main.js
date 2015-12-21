@@ -1,11 +1,11 @@
 "use strict";
 
-(function(){
+(function() {
     var appName = "Spotify region search";
     var countryCodes = {};
     
     $(function() {
-        $.getJSON("country-codes.json", function(data) { countryCodes = data; })
+        $.getJSON("country-codes.json", function(data) { countryCodes = data; });
     });
 
     $(document).ready(function(event) {
@@ -14,7 +14,7 @@
             if (artistString) {
                 setArtistSearch(artistString);
             }
-        }
+        };
         
         $("#artist-search-field").keyup(function(e) {
             if (e.keyCode == 13) {
@@ -52,27 +52,24 @@
         // dumping stuff into a list, then writing it into a separate list 
         // element, so that we don't rewrite the DOM too heavily
         var domList = $("<ul></ul>").appendTo($("#artist-results"));
-        var contents = [];
-        
-        for (var i = 0; i < artistList.length; i++) {
-            var item = artistList[i];
+        var htmlSoup = artistList.map(function(artist) {
             var displayElements = [];
             
             var linkHtml = 
                 '<a href="#" class="artist-open-button" ' + 
-                'data-artist-id="' + item.id + '" ' + 
-                'data-artist-name="' + item.name + '">open</a>';
+                'data-artist-id="' + artist.id + '" ' + 
+                'data-artist-name="' + artist.name + '">open</a>';
             
-            displayElements.push(item.name);
-            displayElements.push("(" + item.popularity + ")");
-            if (("genres" in item) && (item.genres.length > 0)) {
-                displayElements.push("{genres: " + item.genres.join(", ") + "}");
+            displayElements.push(artist.name);
+            displayElements.push("(" + artist.popularity + ")");
+            if (("genres" in artist) && (artist.genres.length > 0)) {
+                displayElements.push("{genres: " + artist.genres.join(", ") + "}");
             }
             
-            contents.push("<li>" + linkHtml + " " + displayElements.join(" ") + "</li>");
-        }
+            return  "<li>" + linkHtml + " " + displayElements.join(" ") + "</li>";
+        }).join("");
+        domList.html(htmlSoup);
         
-        domList.html(contents.join(""));
         $(".artist-open-button").click(function() {
            document.title = $(this).data('artist-name') + ' - ' + appName;
            populateSongs($(this).data('artist-id'));
@@ -99,13 +96,10 @@
             // dumping stuff into a list, then writing it into a separate list 
             // element, so that we don't rewrite the DOM too heavily
             var domList = $("<ul></ul>").appendTo($("#songs"));
-            var contents = [];
             
-            for (var i = 0; i < data.items.length; i++) {
-                var item = data.items[i];
-                
-                var imageStr = item.images.slice(-1).pop().url;
-                var marketStr = item.available_markets
+            var listSoup = data.items.map(function(album) {
+                var imageStr = album.images.slice(-1).pop().url;
+                var marketStr = album.available_markets
                     .map(function(str) {
                         return "<img " + 
                             "src='flags/" + str + ".png' " + 
@@ -113,12 +107,11 @@
                             "title='" + countryCodes[str] + "' />";
                     }).join(" ");
                     
-                contents.push(
-                    "<li><img src='" + imageStr + "' width='32' height ='32' />" + 
-                    data.items[i].name + ": " + marketStr + "</li>");
-            }
+                return "<li><img src='" + imageStr + "' width='32' height ='32' />" + 
+                       album.name + "<br />" + marketStr + "</li>";
+            }).join("");
             
-            domList.html(contents.join(""));
+            domList.html(listSoup);
             
             // TODO do lazy infinite scroll
             if (data.next !== null) {

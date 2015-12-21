@@ -69,7 +69,7 @@
                 displayElements.push("{genres: " + item.genres.join(", ") + "}");
             }
             
-            contents.push("<li>" + displayElements.join(" ") + " " + linkHtml);
+            contents.push("<li>" + linkHtml + " " + displayElements.join(" ") + "</li>");
         }
         
         domList.html(contents.join(""));
@@ -85,7 +85,8 @@
         $("#songs").empty();
         $("#songs").show();
         
-        appendSongs("https://api.spotify.com/v1/artists/" + artistId + "/albums", 3);
+        appendSongs(
+            "https://api.spotify.com/v1/artists/" + artistId + "/albums", 3);
     }
 
     function appendSongs(url, countdown) {

@@ -9,12 +9,22 @@
     });
 
     $(document).ready(function(event) {
-        $("#artist-search").keyup(function(e) {
+        var doSearch = function() {
+            var artistString = $("#artist-search-field").val().trim();
+            if (artistString) {
+                setArtistSearch(artistString);
+            }
+        }
+        
+        $("#artist-search-field").keyup(function(e) {
             if (e.keyCode == 13) {
                 // enter key pressed
-                setArtistSearch($("#artist-search").val());
+                doSearch();
             }
         });
+        
+        $("#artist-search-go").click(doSearch);
+        $("#artist-search-form").submit(doSearch);
     });
 
     function setArtistSearch(artistName) {

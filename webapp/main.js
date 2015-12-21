@@ -42,7 +42,7 @@
     }
 
     function renderArtists(artistList, isAppend) {
-        $("#songs").hide();
+        $("#album-results").hide();
         
         if (!isAppend) {
             $("#artist-results").empty();
@@ -70,32 +70,32 @@
         }).join("");
         domList.html(htmlSoup);
         
-        $(".artist-open-button").click(function() {
+        $("a.artist-open-button").click(function() {
            document.title = $(this).data('artist-name') + ' - ' + appName;
-           populateSongs($(this).data('artist-id'));
+           populateAlbums($(this).data('artist-id'));
            return false;
         });
     }
 
-    function populateSongs(artistId) {
+    function populateAlbums(artistId) {
         $("#artist-results").hide();
-        $("#songs").empty();
-        $("#songs").show();
+        $("#album-results").empty();
+        $("#album-results").show();
         
-        appendSongs(
-            "https://api.spotify.com/v1/artists/" + artistId + "/albums", 3);
+        appendAlbums(
+            "https://api.spotify.com/v1/artists/" + artistId + "/albums?limit=25", 4);
     }
 
-    function appendSongs(url, countdown) {
+    function appendAlbums(url, countdown) {
         if (countdown <= 0) {
-            $("#songs").append("<div><i>(remainder truncated)</i></div>");
+            $("#album-results").append("<div><i>(remainder truncated)</i></div>");
             return;
         }
         
         $.getJSON(url, function(data) {
             // dumping stuff into a list, then writing it into a separate list 
             // element, so that we don't rewrite the DOM too heavily
-            var domList = $("<ul></ul>").appendTo($("#songs"));
+            var domList = $("<ul></ul>").appendTo($("#album-results"));
             
             var listSoup = data.items.map(function(album) {
                 var imageStr = album.images.slice(-1).pop().url;
@@ -106,16 +106,46 @@
                             "alt='" + countryCodes[str] + "' " + 
                             "title='" + countryCodes[str] + "' />";
                     }).join(" ");
+                var linkStr = 
+                    '<span class="album-open-button" ' + 
+                    'data-album-id="' + album.id + '">' + 
+                    album.name + '</a>';
                     
                 return "<li><img src='" + imageStr + "' width='32' height ='32' />" + 
-                       album.name + "<br />" + marketStr + "</li>";
+                       linkStr + "<br />" + marketStr + "</li>";
             }).join("");
             
             domList.html(listSoup);
+            domList.find("span.album-open-button").click(function() {
+                var trackUrl = 
+                    "https://api.spotify.com/v1/albums/" + 
+                    $(this).data('album-id') + "/tracks?limit=50";
+                getTracks(trackUrl);
+                return false;
+            });
             
             // TODO do lazy infinite scroll
             if (data.next !== null) {
-                appendSongs(data.next, countdown - 1);
+                appendAlbums(data.next, countdown - 1);
+            }
+        });
+    }
+    
+    function getTracks(dataUrl, allTracks) {
+        allTracks = allTracks || "";
+        
+        $.getJSON(dataUrl, function(data) {
+            var currTracks = data.items.map(function(track) {
+                return track.track_number + ". " + track.name + 
+                    (track.explicit ? " (E)" : "") + "\n";
+            }).join("");
+            
+            allTracks = allTracks + currTracks;
+            
+            if (data.next !== null) {
+                getTracks(data.next, allTracks);
+            } else {
+                window.alert(allTracks);
             }
         });
     }

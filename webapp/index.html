@@ -2,18 +2,18 @@
 <html>
 <head>
     <title>Spotify region search</title>
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.4/jquery.min.js"></script>
-    <script src="main.js"></script>
+    <link href="base.css" rel="stylesheet" type="text/css" />
+    <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.4/jquery.min.js"></script>
+    <script type="text/javascript" src="main.js"></script>
 </head>
 <body>
-    <div>
+    <div id="search-bar">
         <form id="artist-search-form" method="POST" action="javascript:void(0)" autocomplete="on">
             <input id="artist-search-field" type="search" placeholder="artist name" size="40" />
             <button id="artist-search-go" type="button">search</button>
         </form>
-        
     </div>
-    <div id="container">
+    <div id="search-res">
         <div id="artist-results"></div>
         <div id="album-results"></div>
     </div>

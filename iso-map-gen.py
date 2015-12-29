@@ -20,5 +20,5 @@ for row in rows.find_all("tr", recursive=False):
         country = cells[1].get_text().strip()
         countries[code] = country
 
-file = open("country-codes.json", "w")
-json.dump(countries, file)
+output_file = open("country-codes.json", "w")
+json.dump(countries, output_file)

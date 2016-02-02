@@ -48,6 +48,10 @@
             $("#artist-results").empty();
         }
         $("#artist-results").show();
+        
+        if (!isAppend && artistList.length === 0) {
+            $("#artist-results").html('<span class="no-res">(no results)</span>');
+        }
 
         // dumping stuff into a list, then writing it into a separate list
         // element, so that we don't rewrite the DOM too heavily

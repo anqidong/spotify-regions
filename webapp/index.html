@@ -9,13 +9,18 @@
 <body>
     <div id="search-bar">
         <form id="artist-search-form" method="POST" action="javascript:void(0)" autocomplete="on">
-            <input id="artist-search-field" type="search" placeholder="artist name" size="40" />
+            <input id="artist-search-field" type="search" placeholder="artist name" size="50" />
             <button id="artist-search-go" type="button">search</button>
         </form>
     </div>
+    
     <div id="search-res">
         <div id="artist-results"></div>
         <div id="album-results"></div>
+        
+        <noscript>
+          <div>This page does not work without JavaScript, sorry. It's a web app that makes web requests.</div>
+        </noscript>
     </div>
 </body>
 </html>

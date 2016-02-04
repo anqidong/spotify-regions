@@ -46,12 +46,13 @@
 
         if (!isAppend) {
             $("#artist-results").empty();
+
+            if (artistList.length === 0) {
+                $("#artist-results").html(
+                        '<span class="no-res">(no results)</span>');
+            }
         }
         $("#artist-results").show();
-        
-        if (!isAppend && artistList.length === 0) {
-            $("#artist-results").html('<span class="no-res">(no results)</span>');
-        }
 
         // dumping stuff into a list, then writing it into a separate list
         // element, so that we don't rewrite the DOM too heavily
@@ -60,7 +61,7 @@
             var displayElements = [];
 
             var linkHtml =
-                '<a href="#" class="artist-open-button" ' +
+                '<a href="#" class="artist-open-button touch-action" ' +
                 'data-artist-id="' + artist.id + '" ' +
                 'data-artist-name="' + artist.name + '">open</a>';
 
@@ -103,24 +104,29 @@
 
             var listSoup = data.items.map(function(album) {
                 var imageStr = album.images.slice(-1).pop().url;
-                var marketStr = album.available_markets
+                var imageHtml = 
+                        "<img src='" + imageStr + 
+                        "' class='album-cover-art' width='32' height ='32' />";
+                
+                var marketHtml = album.available_markets
                     .map(function(str) {
-                        return "<img " +
+                        return "<img class='album-region-icon'" +
                             "src='flags/" + str + ".png' " +
                             "alt='" + countryCodes[str] + "' " +
                             "title='" + countryCodes[str] + "' />";
                     }).join(" ");
-                var linkStr =
-                    '<span class="album-open-button" ' +
-                    'data-album-id="' + album.id + '">' +
-                    album.name + '</a>';
+                    
+                var linkHtml =
+                    '<div class="album-open-button touch-action" ' +
+                    'data-album-id="' + album.id + '">' + imageHtml +
+                    album.name + '</div>';
 
-                return "<li><img src='" + imageStr + "' width='32' height ='32' />" +
-                       linkStr + "<br />" + marketStr + "</li>";
+                return "<li>" + linkHtml + "<div class='album-markets'>" 
+                        + marketHtml + "</div></li>";
             }).join("");
 
             domList.html(listSoup);
-            domList.find("span.album-open-button").click(function() {
+            domList.find("div.album-open-button").click(function() {
                 var trackUrl =
                     "https://api.spotify.com/v1/albums/" +
                     $(this).data('album-id') + "/tracks?limit=50";

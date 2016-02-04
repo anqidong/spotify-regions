@@ -34,7 +34,7 @@ html, body {
 
 #search-bar button, #search-bar input, #search-bar select {
   font-family: inherit;
-  font-size: 100%;
+  font-size: 90%;
 }
 
 #search-res {

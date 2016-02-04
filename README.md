@@ -1,4 +1,4 @@
 # spotify-regions
-Shows which regions a Spotify entity is available in. 
+Shows which regions a Spotify entity is available in.
 
-(I know very little web programming, so apologies if the JavaScript is not very good.)
+Provides interface for searching for albums by an artist, and a view of their albums and the countries in which they are available. Clicking on an album retrieves a track list.

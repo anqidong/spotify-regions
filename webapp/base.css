@@ -63,14 +63,15 @@ html, body {
 }
 
 #artist-search-field {
-  -webkit-flex-direction: row;
-  -webkit-flex: 1 1;
-  flex-direction: row;
-  flex: 1 1;
+  width: 55em;
+  -webkit-flex: 3 3;
+  flex: 3 3;
 }
 
 #artist-search-go {
   margin-left: 0.5em;
+  -webkit-flex: 0 0;
+  flex: 0 0;
 }
 
 #search-res {

@@ -23,8 +23,12 @@
             }
         });
 
+        // $("#artist-search-field").blur(doSearch);
+                
         $("#artist-search-go").click(doSearch);
+        
         $("#artist-search-form").submit(doSearch);
+        $("#artist-search-form").focusout(doSearch);
     });
 
     function setArtistSearch(artistName) {

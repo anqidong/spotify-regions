@@ -23,8 +23,12 @@
             }
         });
 
+        // $("#artist-search-field").blur(doSearch);
+                
         $("#artist-search-go").click(doSearch);
+        
         $("#artist-search-form").submit(doSearch);
+        $("#artist-search-form").focusout(doSearch);
     });
 
     function setArtistSearch(artistName) {
@@ -109,9 +113,11 @@
                         "' class='album-cover-art' width='32' height ='32' />";
                 
                 var marketHtml = album.available_markets
-                    .map(function(str) {
+                    .map(function(strOrig) {
+                        var str = strOrig.toUpperCase();
+                        
                         return "<img class='album-region-icon'" +
-                            "src='flags/" + str + ".png' " +
+                            "src='flags/" + str.toLowerCase() + ".png' " +
                             "alt='" + countryCodes[str] + "' " +
                             "title='" + countryCodes[str] + "' />";
                     }).join(" ");

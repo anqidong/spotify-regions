@@ -1,12 +1,16 @@
 /* media queries for mobile phones etc */
-@media only screen and ((max-device-width: 640px) or (max-device-height: 640px)) {
+@media only screen and (max-width: 480px) {
   .touch-action {
-    padding: 1em;
+    /* padding: 0.5em 0; */
   }
   
   #album-results img.album-cover-art {
     vertical-align: middle;
     margin-right: 0.6em;
+  }
+  
+  button#artist-search-go {
+    display: none;
   }
 }
 
@@ -26,6 +30,13 @@ html, body {
   width: 100%;
   height: 3em;
   
+  display: -webkit-flex;
+  -webkit-flex-direction: row;
+  -webkit-align-items: stretch;
+  display: flex;
+  flex-direction: row;
+  align-items: stretch;
+  
   -moz-box-sizing: border-box;
   -webkit-box-sizing: border-box;
   box-sizing: border-box;
@@ -34,7 +45,32 @@ html, body {
 
 #search-bar button, #search-bar input, #search-bar select {
   font-family: inherit;
-  font-size: 100%;
+  font-size: 90%;
+}
+
+#artist-search-form {
+  display: -webkit-flex;
+  -webkit-flex-direction: row;
+  -webkit-justify-content: space-between;
+  -webkit-align-items: stretch;
+
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: stretch;
+  
+  width: 100%;
+}
+
+#artist-search-field {
+  -webkit-flex-direction: row;
+  -webkit-flex: 1 1;
+  flex-direction: row;
+  flex: 1 1;
+}
+
+#artist-search-go {
+  margin-left: 0.5em;
 }
 
 #search-res {

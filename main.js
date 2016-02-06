@@ -116,10 +116,9 @@
                     .map(function(strOrig) {
                         var str = strOrig.toUpperCase();
                         
-                        return "<img class='album-region-icon'" +
-                            "src='flags/" + str.toLowerCase() + ".png' " +
-                            "alt='" + countryCodes[str] + "' " +
-                            "title='" + countryCodes[str] + "' />";
+                        return "<i class='" + // "album-region-icon " +
+                            "famfamfam-flag-" + str.toLowerCase() + "' " +
+                            "title='" + countryCodes[str] + "'></i>";
                     }).join(" ");
                     
                 var linkHtml =

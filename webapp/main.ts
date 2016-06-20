@@ -3,8 +3,13 @@
 "use strict";
 
 (function main() {
-    let appName: string = "Spotify region search";
+    const appName: string = "Spotify region search";
     let countryCodes = {}; // TODO see if a type signature can be applied here
+
+    // TODO can we group this into a namespace of sorts?
+    type AppViews = "blank" | "artistsSearch" | "artistView";
+    let appState: AppViews = "blank";
+    let activeSearch: string = "";
 
     $(function() {
         $.getJSON("country-codes.json", function(data) { countryCodes = data; });
@@ -12,10 +17,11 @@
 
     $(document).ready(function(event) {
         let doSearch = function doSearch() {
-            var artistString: string = $("#artist-search-field").val().trim();
+            let artistString: string = $("#artist-search-field").val().trim();
             if (artistString) {
                 setArtistSearch(artistString);
             }
+            return false;
         };
 
         $("#artist-search-field").keyup(function(e) {
@@ -26,15 +32,22 @@
         });
 
         // $("#artist-search-field").blur(doSearch);
-                
         $("#artist-search-go").click(doSearch);
-        
         $("#artist-search-form").submit(doSearch);
         $("#artist-search-form").focusout(doSearch);
     });
 
     function setArtistSearch(artistName: string) {
         let nameEncoded = artistName.replace(/ /g, "+");
+
+        if (appState === "artistsSearch" && nameEncoded === activeSearch) {
+            // this prevents the app from re-searching an artist needlessly
+            return;
+        }
+
+        appState = "artistsSearch";
+        activeSearch = nameEncoded;
+
         let queryUrl =
             "https://api.spotify.com/v1/search?q=" +
                 nameEncoded + "&type=artist&limit=50";
@@ -58,7 +71,9 @@
                         '<span class="no-res">(no results)</span>');
             }
         }
-        
+
+        $("#artist-results").show();
+
         // dumping stuff into a list, then writing it into a separate list
         // element, so that we don't rewrite the DOM too heavily
         let domList = $("<ul></ul>").appendTo($("#artist-results"));
@@ -81,21 +96,19 @@
         domList.html(htmlSoup);
 
         $("a.artist-open-button").click(function artistOpenHandler() {
-            // FIXME for some reason this takes two clicks to register
-            console.log('aoh');
-            document.title = $(this).data('artist-name') + ' - ' + appName;
-            populateAlbums($(this).data('artist-id'));
-            // return false;
+            document.title = $(this).data("artist-name") + " - " + appName;
+            populateAlbums($(this).data("artist-id"));
+            return false;
         });
-        
-        // make sure to show this AFTER event listeners are attached!
-        $("#artist-results").show();
     }
 
     function populateAlbums(artistId: string) {
+        appState = "artistView";
+        activeSearch = artistId;
+
         $("#artist-results").hide();
         $("#album-results").empty();
-        
+
         // show before, because we can allow the user to see the pagination happening
         $("#album-results").show();
 
@@ -115,31 +128,30 @@
             let domList = $("<ul></ul>").appendTo($("#album-results"));
 
             let listSoup: string = data.items.map(function(album) {
-                var imageStr = album.images.slice(-1).pop().url;
-                var imageHtml = 
-                        "<img src='" + imageStr + 
+                let imageStr = album.images.slice(-1).pop().url;
+                let imageHtml =
+                        "<img src='" + imageStr +
                         "' class='album-cover-art' width='32' height ='32' />";
-                
-                var marketHtml = album.available_markets
+
+                let marketHtml = album.available_markets
                     .map(function(countryCodeIso) {
                         let cc: string = countryCodeIso.toUpperCase();
                         let countryName: string = (cc in countryCodes)
                             ? countryCodes[cc]
                             : cc;
-                        
-                        
+
                         return "<i class='" + // "album-region-icon " +
                             "famfamfam-flag-" + countryCodeIso.toLowerCase() + "' " +
                             "aria-label='" + countryName + "' " +
                             "title='" + countryName + "'></i>";
                     }).join(" ");
-                    
-                var linkHtml =
-                    '<div class="album-open-button touch-action" ' +
-                    'data-album-id="' + album.id + '">' + imageHtml +
-                    album.name + '</div>';
 
-                return "<li>" + linkHtml + "<div class='album-markets'>" 
+                let linkHtml =
+                    "<div class='album-open-button touch-action' " +
+                    "data-album-id='" + album.id + "'>" + imageHtml +
+                    album.name + "</div>";
+
+                return "<li>" + linkHtml + "<div class='album-markets'>"
                         + marketHtml + "</div></li>";
             }).join("");
 
@@ -147,7 +159,7 @@
             domList.find("div.album-open-button").click(function albumOpenHandler() {
                 let trackUrl: string =
                     "https://api.spotify.com/v1/albums/" +
-                    $(this).data('album-id') + "/tracks?limit=50";
+                    $(this).data("album-id") + "/tracks?limit=50";
                 getTracks(trackUrl);
                 return false;
             });
@@ -163,7 +175,9 @@
         $.getJSON(dataUrl, function(data) {
             let currTracks: string = data.items.map(function(track) {
                 return track.track_number + ". " + track.name +
-                    (track.explicit ? " (E)" : "") + "\n";
+                    (track.explicit
+                        ? " (E)"
+                        : "") + "\n";
             }).join("");
 
             allTracks = allTracks + currTracks;

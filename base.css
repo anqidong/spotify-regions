@@ -66,6 +66,9 @@ html, body {
   width: 55em;
   -webkit-flex: 3 3;
   flex: 3 3;
+  
+  -webkit-transition: all 0.5s cubic-bezier(0.39, 0.575, 0.565, 1);
+  transition: all 0.5s cubic-bezier(0.39, 0.575, 0.565, 1);
 }
 
 #artist-search-go {
@@ -85,8 +88,7 @@ html, body {
   -moz-box-sizing: border-box;
   -webkit-box-sizing: border-box;
   box-sizing: border-box;
-  padding: 1em;
-  padding-top: 0;
+  padding: 0 1em 1em;
 }
 
 #artist-results ul, #album-results ul {

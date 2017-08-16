@@ -3,8 +3,72 @@
 "use strict";
 
 (function main() {
+    function redirectForAuth() {
+        // if you're planning to use this code, please use a different string
+        const client_id: string = "e1e537d4eb8c485c9f34843a0e2cb2b6";
+
+        const currUrl: string = window.location.href.split("#")[0]; // strips hash out
+        const authUrl: string = "https://accounts.spotify.com/authorize" +
+                "?response_type=token" +
+                "&client_id=" + encodeURIComponent(client_id) +
+                "&redirect_uri=" + encodeURIComponent(currUrl);
+
+        window.location.replace(authUrl);
+    }
+
+    function parseHashAsGetString(query: string): object {
+        const pat: RegExp = /([^&=]+)=([^&;]+)/g;
+        let match: string[];
+        let data: object = {};
+
+        while ((match = pat.exec(query)) !== null) {
+            data[match[1]] = decodeURIComponent(match[2]);
+        }
+
+        return data;
+    }
+
+    // returns a tuple of access_token, expiry_delta (can be NaN)
+    function requireImplicitGrant(): [string | null, number] {
+        if (window.location.hash.length > 0) {
+            const hashData: any = parseHashAsGetString(window.location.hash.substring(1));
+
+            // wipe hash from page URL
+            history.replaceState(null, "", "#");
+
+            if ("access_token" in hashData) {
+                // TODO validate state key from local storage
+
+                $(document).ready(function(_) {
+                    $("#failure-fallback").hide();
+                });
+
+                // parseInt should return NaN if expires_in wasn't found in the hashData
+                return [hashData.access_token, parseInt(hashData.expires_in, 10)];
+            } else if ("error" in hashData) {
+                // the DOM might not yet be parsed here, so wait until document is ready
+                $(document).ready(function(_) {
+                    $("#main-content").hide().html("");
+                    $("#failure-fallback").html("Auth failed with error " + hashData.error);
+                });
+
+                return [null, NaN];
+            }
+        }
+
+        // if the code reaches here, no access token was retrievable
+        redirectForAuth();
+
+        // this return should be unreachable
+        return [null, NaN];
+    }
+
+    const authData: [string | null, number] = requireImplicitGrant();
+    const accessToken: string | null = authData[0];
+
     const appName: string = "Spotify region search";
     let countryCodes = {}; // TODO see if a type signature can be applied here
+
 
     // TODO can we group this into a namespace of sorts?
     type AppViews = "blank" | "artistsSearch" | "artistView";
@@ -17,7 +81,7 @@
 
     $(document).ready(function(event) {
         let doSearch = function doSearch() {
-            let artistString: string = $("#artist-search-field").val().trim();
+            const artistString: string = $("#artist-search-field").val().trim();
             if (artistString) {
                 setArtistSearch(artistString);
             }
@@ -37,8 +101,10 @@
         $("#artist-search-form").focusout(doSearch);
     });
 
+
+
     function setArtistSearch(artistName: string) {
-        let nameEncoded = artistName.replace(/ /g, "+");
+        const nameEncoded: string = artistName.replace(/ /g, "+");
 
         if (appState === "artistsSearch" && nameEncoded === activeSearch) {
             // this prevents the app from re-searching an artist needlessly
@@ -48,13 +114,15 @@
         appState = "artistsSearch";
         activeSearch = nameEncoded;
 
-        let queryUrl =
-            "https://api.spotify.com/v1/search?q=" +
+        const queryUrl: string = "https://api.spotify.com/v1/search?q=" +
                 nameEncoded + "&type=artist&limit=50";
-        // don't set the market, in order to receive artist results for any market
 
-        $.getJSON(queryUrl, function(data) {
-            renderArtists(data.artists.items, false);
+        $.ajax({
+            url: queryUrl,
+            headers: { 'Authorization': 'Bearer ' + accessToken },
+            success: function(data) {
+                renderArtists(data.artists.items, false);
+            },
         });
 
         document.title = 'Search: "' + artistName + '" - ' + appName;
@@ -76,8 +144,8 @@
 
         // dumping stuff into a list, then writing it into a separate list
         // element, so that we don't rewrite the DOM too heavily
-        let domList = $("<ul></ul>").appendTo($("#artist-results"));
-        let htmlSoup: string = artistList.map(function(artist) {
+        const domList = $("<ul></ul>").appendTo($("#artist-results"));
+        const htmlSoup: string = artistList.map(function(artist) {
             let displayElements: Array<string> = [];
 
             let linkHtml: string =
@@ -116,29 +184,23 @@
             "https://api.spotify.com/v1/artists/" + artistId + "/albums?limit=25", 4);
     }
 
-    function appendAlbums(url: string, countdown: number) {
-        if (countdown <= 0) {
-            $("#album-results").append("<div><i>(remainder truncated)</i></div>");
-            return;
-        }
-
-        $.getJSON(url, function(data) {
+    function appendAlbums(queryUrl: string, countdown: number) {
+        function renderAlbumsFromJson(data) {
             // dumping stuff into a list, then writing it into a separate list
             // element, so that we don't rewrite the DOM too heavily
-            let domList = $("<ul></ul>").appendTo($("#album-results"));
+            const domList = $("<ul></ul>").appendTo($("#album-results"));
 
-            let listSoup: string = data.items.map(function(album) {
-                let imageStr = album.images.slice(-1).pop().url;
-                let imageHtml =
+            const listSoup: string = data.items.map(function(album) {
+                const imageStr = album.images.slice(-1).pop().url;
+                const imageHtml =
                         "<img src='" + imageStr +
                         "' class='album-cover-art' width='32' height ='32' />";
 
-                let marketHtml = album.available_markets
+                const marketHtml = album.available_markets
                     .map(function(countryCodeIso) {
-                        let cc: string = countryCodeIso.toUpperCase();
-                        let countryName: string = (cc in countryCodes)
-                            ? countryCodes[cc]
-                            : cc;
+                        const cc: string = countryCodeIso.toUpperCase();
+                        const countryName: string =
+                                (cc in countryCodes) ? countryCodes[cc] : cc;
 
                         return "<i class='" + // "album-region-icon " +
                             "famfamfam-flag-" + countryCodeIso.toLowerCase() + "' " +
@@ -146,7 +208,7 @@
                             "title='" + countryName + "'></i>";
                     }).join(" ");
 
-                let linkHtml =
+                const linkHtml =
                     "<div class='album-open-button touch-action' " +
                     "data-album-id='" + album.id + "'>" + imageHtml +
                     album.name + "</div>";
@@ -157,7 +219,7 @@
 
             domList.html(listSoup);
             domList.find("div.album-open-button").click(function albumOpenHandler() {
-                let trackUrl: string =
+                const trackUrl: string =
                     "https://api.spotify.com/v1/albums/" +
                     $(this).data("album-id") + "/tracks?limit=50";
                 getTracks(trackUrl);
@@ -168,25 +230,39 @@
             if (data.next !== null) {
                 appendAlbums(data.next, countdown - 1);
             }
-        });
+        }
+
+        if (countdown <= 0) {
+            $("#album-results").append("<div><i>(remainder truncated)</i></div>");
+        } else {
+            $.ajax({
+                url: queryUrl,
+                headers: { 'Authorization': 'Bearer ' + accessToken },
+                success: renderAlbumsFromJson,
+            });
+        }
     }
 
     function getTracks(dataUrl: string, allTracks = "") {
-        $.getJSON(dataUrl, function(data) {
-            let currTracks: string = data.items.map(function(track) {
-                return track.track_number + ". " + track.name +
-                    (track.explicit
-                        ? " (E)"
-                        : "") + "\n";
-            }).join("");
+        $.ajax({
+            url: dataUrl,
+            headers: { 'Authorization': 'Bearer ' + accessToken },
+            success: function(data) {
+                const currTracks: string = data.items.map(function(track) {
+                    return track.track_number + ". " + track.name +
+                        (track.explicit
+                            ? " (E)"
+                            : "") + "\n";
+                }).join("");
 
-            allTracks = allTracks + currTracks;
+                allTracks = allTracks + currTracks;
 
-            if (data.next !== null) {
-                getTracks(data.next, allTracks);
-            } else {
-                window.alert(allTracks);
-            }
+                if (data.next !== null) {
+                    getTracks(data.next, allTracks);
+                } else {
+                    window.alert(allTracks);
+                }
+            },
         });
     }
 })();

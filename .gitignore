@@ -1,3 +1,9 @@
+# generated output from Typescript compilation
 webapp/*.js
 *.temp.js
+
+# Typescript type template files for JSON etc
 *.d.ts
+
+# private Spotify API key for server-run application
+api-key.json

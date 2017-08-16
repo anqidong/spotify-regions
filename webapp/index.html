@@ -2,31 +2,33 @@
 <html>
 <head>
     <meta charset="UTF-8">
-    
+
     <title>Spotify region search</title>
-    
+
     <link href="base.css" rel="stylesheet" type="text/css" />
     <link href="flags/famfamfam-flags.css" rel="stylesheet" type="text/css" />
-    <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.4/jquery.min.js"></script>
+    <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/2.2.4/jquery.min.js"></script>
     <script type="text/javascript" src="main.js"></script>
-    
+
     <meta name="viewport" content="width=device-width, initial-scale=1" />
 </head>
 <body>
-    <div id="search-bar">
-        <form id="artist-search-form" method="POST" action="javascript:void(0)" autocomplete="on">
-            <input id="artist-search-field" type="search" placeholder="artist name" />
-            <button id="artist-search-go" type="button">search</button>
-        </form>
+    <div id="main-content">
+        <div id="search-bar">
+            <form id="artist-search-form" method="POST" action="javascript:void(0)" autocomplete="on">
+                <input id="artist-search-field" type="search" placeholder="artist name" />
+                <button id="artist-search-go" type="button">search</button>
+            </form>
+        </div>
+
+        <div id="search-res">
+            <div id="artist-results"></div>
+            <div id="album-results"></div>
+        </div>
     </div>
-    
-    <div id="search-res">
-        <div id="artist-results"></div>
-        <div id="album-results"></div>
-        
-        <noscript>
-          <div>This page does not work without JavaScript, sorry. It's a web app that makes web requests.</div>
-        </noscript>
+
+    <div id="failure-fallback">
+        <noscript>JavaScript disabled</noscript>
     </div>
 </body>
 </html>

@@ -1,6 +1,11 @@
-# requires the following node.js modules installed globally:
+#!/bin/sh
+
+# Requires the following node.js modules installed globally:
 # - typescript
 # - uglify-js
+#
+# This is nominally a .ps1 (Powershell) script to keep Windows happy, but this script is simple
+# enough that it should work correctly in any POSIX shell as well.
 
 pushd webapp
 tsc main.ts --outFile main.temp.js

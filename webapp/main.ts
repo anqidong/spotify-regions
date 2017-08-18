@@ -62,7 +62,10 @@
 
         if (!isNaN(expiryTimestamp) &&
                 expiryTimestamp > (Date.now() + TOKEN_EXPIRY_PAD_MS)) {
-            return window.localStorage.getItem(ACCESS_TOKEN_KEY);
+            const accessToken = window.localStorage.getItem(ACCESS_TOKEN_KEY);
+            if (accessToken) {
+                return accessToken;
+            }
         }
 
         return undefined;
@@ -139,11 +142,12 @@
         return _redirectForAuth(nonce);
     }
 
-    const accessToken: string | null = requireImplicitGrant();
-
-    let countryCodes: any = {}; // can't apply a type signature, because data is dynamically loaded
+    const accessToken: string | undefined = requireImplicitGrant();
 
     // TODO can we group this into a namespace of sorts
+
+    // the build process actually inserts the given file at ___file_subst___
+    const COUNTRY_CODES: StrDictionary<string> = ___file_subst___("country-codes.json");
 
     const MAX_ALBUM_PAGES = 4;
     const APP_NAME: string = "Spotify region search";
@@ -156,10 +160,6 @@
 
     let appState: AppViews = AppViews.Blank;
     let activeSearch: string = "";
-
-    $(function() {
-        $.getJSON("country-codes.json", function(data) { countryCodes = data; });
-    }); // TODO inline country codes
 
     $(document).ready(function() {
         function doSearch() {
@@ -283,7 +283,7 @@
                     .map(function(countryCodeIso: string) {
                         const cc: string = countryCodeIso.toUpperCase();
                         const countryName: string =
-                                (cc in countryCodes) ? countryCodes[cc] : cc;
+                                (cc in COUNTRY_CODES) ? COUNTRY_CODES[cc] : cc;
 
                         return "<span class='" + // "album-region-icon " +
                             "famfamfam-flag-" + countryCodeIso.toLowerCase() + "' " +

@@ -8,7 +8,7 @@
 # enough that it should work correctly in any POSIX shell as well.
 
 pushd webapp
-tsc main.ts --outFile main.temp.js
+tsc main.ts --strict --noImplicitReturns --noFallthroughCasesInSwitch --noUnusedLocals --noUnusedParameters --outFile main.temp.js # --pretty
 uglifyjs main.temp.js --compress --mangle --screw-ie8 -o main.js
-rm main.temp.js
+# rm main.temp.js
 popd

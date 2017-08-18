@@ -40,7 +40,7 @@ html, body {
   -moz-box-sizing: border-box;
   -webkit-box-sizing: border-box;
   box-sizing: border-box;
-  margin: 0.5em 1em;
+  padding: 0.5em 1em;
 }
 
 #search-bar button, #search-bar input, #search-bar select {
@@ -88,7 +88,7 @@ html, body {
   -moz-box-sizing: border-box;
   -webkit-box-sizing: border-box;
   box-sizing: border-box;
-  margin: 0 1em 1em;
+  padding: 0 1em 1em;
 }
 
 #artist-results ul, #album-results ul {
@@ -120,7 +120,7 @@ html, body {
 }
 
 #failure-fallback {
-  margin: 2em;
+  padding: 2em;
   font-size: 1.5em;
   color: #b32;
 }
